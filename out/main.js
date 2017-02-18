@@ -5,95 +5,119 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var DisplayObjectContainer = (function () {
     function DisplayObjectContainer() {
+        this.children = new Array();
+    }
+    DisplayObjectContainer.prototype.addChild = function (child) {
+        if (this.children.indexOf(child) == -1) {
+            this.children.push(child);
+        }
+    };
+    DisplayObjectContainer.prototype.draw = function (canvas) {
+        for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
+            var child = _a[_i];
+            child.draw(canvas);
+        }
+    };
+    DisplayObjectContainer.prototype.removeChild = function (child) {
+        for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
+            var element = _a[_i];
+            if (element == child) {
+                var index = this.children.indexOf(child);
+                this.children.splice(index);
+                return;
+            }
+        }
+    };
+    return DisplayObjectContainer;
+}());
+var DisplayObject = (function () {
+    function DisplayObject() {
         this.x = 0;
         this.y = 0;
         this.scaleX = 1;
         this.scaleY = 1;
-        this.movespeedX = 0;
-        this.movespeedY = 0;
-        this.rotateangle = 0;
-        this.children = new Array();
-        this.canvas = document.getElementById('myCanvas');
-        this.context = this.canvas.getContext('2d');
+        this.alpha = 1;
     }
-    DisplayObjectContainer.prototype.addChild = function (child) {
-        this.children.push(child);
-        this.draw();
+    DisplayObject.prototype.draw = function (canvas) {
     };
-    DisplayObjectContainer.prototype.draw = function () {
-        var _this = this;
-        setInterval(function () {
-            _this.context.clearRect(0, 0, _this.canvas.width, _this.canvas.height);
-            _this.children.forEach(function (element) {
-                element.draw();
-            });
-        }, 30);
-    };
-    return DisplayObjectContainer;
+    return DisplayObject;
 }());
 var Bitmap = (function (_super) {
     __extends(Bitmap, _super);
-    function Bitmap(name) {
+    function Bitmap() {
         _super.call(this);
-        this.filename = name;
+        this.image = null;
+        this.hasLoaded = false;
+        this._src = "";
+        this.image = document.createElement("image");
     }
-    Bitmap.prototype.draw = function () {
-        var x = this.x + this.movespeedX;
-        var y = this.y + this.movespeedY;
-        var canvas = this.canvas;
-        var context = this.context;
-        var img = new Image();
-        img.src = "/resource/assets/" + this.filename;
-        context.scale(this.scaleX, this.scaleY);
-        context.rotate(this.rotateangle * Math.PI / 180);
-        context.drawImage(img, x, y);
-        /*
-        img.onload = function() {
-            setInterval(() => {
-                context.clearRect(0,0,canvas.width,canvas.height);
-                context.drawImage(img,x + msX,y + msY);
-            },30);
-        } */
+    Object.defineProperty(Bitmap.prototype, "src", {
+        set: function (src) {
+            this._src = "/resource/assets/" + src;
+            this.hasLoaded = false;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Bitmap.prototype.draw = function (canvas) {
+        var _this = this;
+        canvas.globalAlpha = this.alpha;
+        if (this.hasLoaded) {
+            canvas.drawImage(this.image, this.x, this.y, this.image.width * this.scaleX, this.image.height * this.scaleY);
+        }
+        else {
+            this.image.src = this._src;
+            this.image.onload = function () {
+                canvas.drawImage(_this.image, _this.x, _this.y, _this.image.width * _this.scaleX, _this.image.height * _this.scaleY);
+                _this.hasLoaded = true;
+            };
+        }
     };
     return Bitmap;
-}(DisplayObjectContainer));
+}(DisplayObject));
 var TextField = (function (_super) {
     __extends(TextField, _super);
     function TextField() {
-        _super.call(this);
+        _super.apply(this, arguments);
         this.text = "";
         this.color = "";
-        this.font = "20px Georgia";
+        this.fontSize = 10;
+        this.font = "Georgia";
     }
-    TextField.prototype.draw = function () {
-        var canvas = this.canvas;
-        var context = this.context;
-        var x = this.x;
-        var y = this.y;
-        var text = this.text;
-        var img = new Image();
-        context.fillStyle = this.color;
-        context.scale(this.scaleX, this.scaleY);
-        context.rotate(this.rotateangle * Math.PI / 180);
-        context.font = this.font;
-        context.fillText(this.text, this.x, this.y + 18);
-        /*
-        setInterval(() => {
-                context.clearRect(0,0,canvas.width,canvas.height);
-                context.fillText(this.text,20,20);
-        },30);
-        */
+    TextField.prototype.draw = function (canvas) {
+        canvas.fillStyle = this.color;
+        canvas.globalAlpha = this.alpha;
+        canvas.font = this.fontSize.toString() + "px" + this.font.toString();
+        canvas.fillText(this.text, this.x, this.y + this.fontSize);
     };
     return TextField;
-}(DisplayObjectContainer));
+}(DisplayObject));
 window.onload = function () {
-    var ground = new DisplayObjectContainer();
-    var pic = new Bitmap("codmw.png");
-    ground.addChild(pic);
+    var canvas = document.getElementById("myCanvas");
+    var canvas2D = canvas.getContext("2d");
+    var background = new DisplayObjectContainer();
     var text = new TextField();
-    text.text = "Hello World!";
+    text.x = 0;
+    text.y = 0;
+    text.scaleX = 3;
+    text.scaleY = 3;
+    text.alpha = 0.5;
     text.color = "#FF0000";
-    //text.scaleX = text.scaleY = 1.5;
-    ground.addChild(text);
+    text.fontSize = 30;
+    //text.font = "Arial";
+    text.text = "I lose my game of life!";
+    var bitmap = new Bitmap();
+    bitmap.x = 0;
+    bitmap.y = 0;
+    bitmap.alpha = 0.8;
+    bitmap.scaleX = 1.5;
+    bitmap.scaleY = 1.5;
+    bitmap.src = "codmw.png";
+    background.addChild(bitmap);
+    background.addChild(text);
+    background.draw(canvas2D);
+    setInterval(function () {
+        canvas2D.clearRect(0, 0, canvas.width, canvas.height);
+    }, 30);
 };
 //# sourceMappingURL=main.js.map

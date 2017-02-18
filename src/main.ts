@@ -1,117 +1,129 @@
-interface drawable {
-    draw();
+interface Drawable {
+
+    draw(canvas: CanvasRenderingContext2D);
+
 }
 
-class DisplayObjectContainer implements drawable {
-    x:number = 0;
-    y:number = 0;
-    scaleX:number = 1;
-    scaleY:number = 1;
-    movespeedX:number = 0;
-    movespeedY:number = 0;
-    rotateangle:number = 0;
-    protected canvas:HTMLCanvasElement;
-    protected context:CanvasRenderingContext2D;
+class DisplayObjectContainer implements Drawable {
 
-    protected children:DisplayObjectContainer[] = new Array();
-    
-    constructor() {
-        this.canvas = document.getElementById('myCanvas') as HTMLCanvasElement;
-        this.context = this.canvas.getContext('2d');
+    children: Drawable[] = new Array();
+
+    addChild(child: Drawable) {
+        if (this.children.indexOf(child) == -1) {
+            this.children.push(child);
+        }
     }
 
-    addChild(child:DisplayObjectContainer) {
-        this.children.push(child);
-        this.draw();
+    draw(canvas: CanvasRenderingContext2D) {
+        for (var child of this.children) {
+            child.draw(canvas);
+        }
     }
 
-    draw() {
-        setInterval(() => {
-            this.context.clearRect(0,0,this.canvas.width,this.canvas.height);
-            this.children.forEach(element => {
-                element.draw(); 
-            });   
-        },30);
+    removeChild(child: Drawable) {
+        for (var element of this.children) {
+            if (element == child) {
+                var index = this.children.indexOf(child);
+                this.children.splice(index);
+                return;
+            }
+        }
     }
 }
 
-class Bitmap extends DisplayObjectContainer {
+class DisplayObject implements Drawable {
 
-    filename:string;
+    x = 0;
+    y = 0;
+    scaleX = 1;
+    scaleY = 1;
+    alpha = 1;
 
-    constructor(name?:string) {
-        super();
-        this.filename = name;
-    }
+    draw(canvas: CanvasRenderingContext2D) {
 
-    draw() {
-        var x = this.x + this.movespeedX;
-        var y = this.y + this.movespeedY;
-
-        var canvas = this.canvas;
-        var context = this.context;
-
-        var img = new Image();
-        img.src = "/resource/assets/" + this.filename;
-
-        context.scale(this.scaleX,this.scaleY);
-        context.rotate(this.rotateangle*Math.PI/180);
-
-        context.drawImage(img,x,y);
-        /*
-        img.onload = function() {
-            setInterval(() => {
-                context.clearRect(0,0,canvas.width,canvas.height);
-                context.drawImage(img,x + msX,y + msY);
-            },30);
-        } */
     }
 }
 
-class TextField extends DisplayObjectContainer {
+class Bitmap extends DisplayObject {
 
-    text:string = "";
-    color:string = "";
-    font:string = "20px Georgia";
+    private image: HTMLImageElement = null;
+    private hasLoaded = false;
+    private _src = "";
 
     constructor() {
         super();
+        this.image = document.createElement("image") as HTMLImageElement;
     }
 
-    draw() {
-        var canvas = this.canvas;
-        var context = this.context;
-        var x = this.x;
-        var y = this.y;
-        var text = this.text;
+    set src(src: string) {
+        this._src = "/resource/assets/" + src;
+        this.hasLoaded = false;
+    }
 
-        var img = new Image();
+    draw(canvas: CanvasRenderingContext2D) {
+        canvas.globalAlpha = this.alpha;
 
-        context.fillStyle = this.color;
+        if (this.hasLoaded) {
+            canvas.drawImage(this.image, this.x, this.y,
+                this.image.width * this.scaleX,
+                this.image.height * this.scaleY);
+        } else {
+            this.image.src = this._src;
+            this.image.onload = () => {
+                canvas.drawImage(this.image, this.x, this.y,
+                    this.image.width * this.scaleX,
+                    this.image.height * this.scaleY);
+                this.hasLoaded = true;
+            }
+        }
+    }
+}
 
-        context.scale(this.scaleX,this.scaleY);
-        context.rotate(this.rotateangle*Math.PI/180);
-        context.font = this.font;
+class TextField extends DisplayObject {
 
-        context.fillText(this.text,this.x,this.y + 18);
-        /*
-        setInterval(() => {
-                context.clearRect(0,0,canvas.width,canvas.height);
-                context.fillText(this.text,20,20);
-        },30);  
-        */
+    text = "";
+    color = "";
+    fontSize = 10;
+    font = "Georgia";
+
+    draw(canvas: CanvasRenderingContext2D) {
+        canvas.fillStyle = this.color;
+        canvas.globalAlpha = this.alpha;
+        canvas.font = this.fontSize.toString() + "px" + this.font.toString();
+        canvas.fillText(this.text, this.x, this.y + this.fontSize);
     }
 }
 
 window.onload = () => {
-    
-    var ground = new DisplayObjectContainer();
-    var pic = new Bitmap("codmw.png");
-    ground.addChild(pic);
-    
+
+    var canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+    var canvas2D = canvas.getContext("2d");
+    var background = new DisplayObjectContainer();
+
     var text = new TextField();
-    text.text = "Hello World!";
+    text.x = 0;
+    text.y = 0;
+    text.scaleX = 3;
+    text.scaleY = 3;
+    text.alpha = 0.5;
     text.color = "#FF0000";
-    //text.scaleX = text.scaleY = 1.5;
-    ground.addChild(text);
+    text.fontSize = 30;
+    //text.font = "Arial";
+    text.text = "I lose my game of life!"
+
+    var bitmap = new Bitmap();
+    bitmap.x = 0;
+    bitmap.y = 0;
+    bitmap.alpha = 0.8;
+    bitmap.scaleX = 1.5;
+    bitmap.scaleY = 1.5;
+    bitmap.src = "codmw.png";
+
+    background.addChild(bitmap);
+    background.addChild(text);
+    background.draw(canvas2D);
+
+    setInterval(() => {
+        canvas2D.clearRect(0, 0, canvas.width, canvas.height);
+    }, 30)
 };

@@ -38,8 +38,7 @@ var DisplayObject = (function () {
         this.scaleY = 1;
         this.alpha = 1;
     }
-    DisplayObject.prototype.draw = function (canvas) {
-    };
+    DisplayObject.prototype.draw = function (canvas) { };
     return DisplayObject;
 }());
 var Bitmap = (function (_super) {
@@ -49,7 +48,7 @@ var Bitmap = (function (_super) {
         this.image = null;
         this.hasLoaded = false;
         this._src = "";
-        this.image = document.createElement("image");
+        this.image = new Image();
     }
     Object.defineProperty(Bitmap.prototype, "src", {
         set: function (src) {
@@ -87,7 +86,7 @@ var TextField = (function (_super) {
     TextField.prototype.draw = function (canvas) {
         canvas.fillStyle = this.color;
         canvas.globalAlpha = this.alpha;
-        canvas.font = this.fontSize.toString() + "px" + this.font.toString();
+        canvas.font = this.fontSize.toString() + "px " + this.font.toString();
         canvas.fillText(this.text, this.x, this.y + this.fontSize);
     };
     return TextField;
@@ -99,25 +98,28 @@ window.onload = function () {
     var text = new TextField();
     text.x = 0;
     text.y = 0;
-    text.scaleX = 3;
-    text.scaleY = 3;
+    //text.scaleX = 3;
+    //text.scaleY = 3;
     text.alpha = 0.5;
     text.color = "#FF0000";
     text.fontSize = 30;
-    //text.font = "Arial";
+    text.font = "Arial";
     text.text = "I lose my game of life!";
     var bitmap = new Bitmap();
     bitmap.x = 0;
     bitmap.y = 0;
     bitmap.alpha = 0.8;
-    bitmap.scaleX = 1.5;
-    bitmap.scaleY = 1.5;
+    bitmap.scaleX = 0.5;
+    bitmap.scaleY = 0.5;
     bitmap.src = "codmw.png";
     background.addChild(bitmap);
     background.addChild(text);
     background.draw(canvas2D);
     setInterval(function () {
         canvas2D.clearRect(0, 0, canvas.width, canvas.height);
+        text.y++;
+        bitmap.x++;
+        background.draw(canvas2D);
     }, 30);
 };
 //# sourceMappingURL=main.js.map

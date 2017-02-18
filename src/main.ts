@@ -1,7 +1,5 @@
 interface Drawable {
-
     draw(canvas: CanvasRenderingContext2D);
-
 }
 
 class DisplayObjectContainer implements Drawable {
@@ -39,9 +37,7 @@ class DisplayObject implements Drawable {
     scaleY = 1;
     alpha = 1;
 
-    draw(canvas: CanvasRenderingContext2D) {
-
-    }
+    draw(canvas: CanvasRenderingContext2D) {}
 }
 
 class Bitmap extends DisplayObject {
@@ -52,7 +48,7 @@ class Bitmap extends DisplayObject {
 
     constructor() {
         super();
-        this.image = document.createElement("image") as HTMLImageElement;
+        this.image = new Image();
     }
 
     set src(src: string) {
@@ -89,7 +85,7 @@ class TextField extends DisplayObject {
     draw(canvas: CanvasRenderingContext2D) {
         canvas.fillStyle = this.color;
         canvas.globalAlpha = this.alpha;
-        canvas.font = this.fontSize.toString() + "px" + this.font.toString();
+        canvas.font = this.fontSize.toString() + "px " + this.font.toString();
         canvas.fillText(this.text, this.x, this.y + this.fontSize);
     }
 }
@@ -103,27 +99,30 @@ window.onload = () => {
     var text = new TextField();
     text.x = 0;
     text.y = 0;
-    text.scaleX = 3;
-    text.scaleY = 3;
+    //text.scaleX = 3;
+    //text.scaleY = 3;
     text.alpha = 0.5;
     text.color = "#FF0000";
     text.fontSize = 30;
-    //text.font = "Arial";
+    text.font = "Arial";
     text.text = "I lose my game of life!"
 
     var bitmap = new Bitmap();
     bitmap.x = 0;
     bitmap.y = 0;
     bitmap.alpha = 0.8;
-    bitmap.scaleX = 1.5;
-    bitmap.scaleY = 1.5;
+    bitmap.scaleX = 0.5;
+    bitmap.scaleY = 0.5;
     bitmap.src = "codmw.png";
 
     background.addChild(bitmap);
     background.addChild(text);
-    background.draw(canvas2D);
 
+    background.draw(canvas2D);
     setInterval(() => {
         canvas2D.clearRect(0, 0, canvas.width, canvas.height);
+        text.y++;
+        bitmap.x++;
+        background.draw(canvas2D);
     }, 30)
 };

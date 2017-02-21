@@ -53,6 +53,7 @@ module math {
         result.d = m2.b * m1.c + m1.d * m2.d;
         result.tx = m2.a * m1.tx + m2.c * m1.ty + m2.tx;
         result.ty = m2.b * m1.tx + m2.d * m1.ty + m2.ty;
+        //console.log(m2.b +"*"+ m1.tx +"+"+ m2.d +"*"+ m1.ty +"+"+ m2.ty +"="+ result.ty );
         return result;
     }
 

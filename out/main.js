@@ -4,12 +4,12 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 window.onload = function () {
-    var canvas = document.getElementById("myCanvas");
-    var canvas2D = canvas.getContext("2d");
+    var context = document.getElementById("myCanvas");
+    var context2D = context.getContext("2d");
     var background = new DisplayObjectContainer();
     var container = new DisplayObjectContainer();
-    container.x = 10;
-    container.y = 20;
+    container.x = 0;
+    container.y = 0;
     container.alpha = 0.5;
     var text1 = new TextField();
     text1.x = 0;
@@ -21,7 +21,7 @@ window.onload = function () {
     text1.text = "I lose my game of life!";
     var text2 = new TextField();
     text2.x = 0;
-    text2.y = 1;
+    text2.y = 20;
     text2.alpha = 1;
     text2.color = "#0000FF";
     text2.fontSize = 30;
@@ -38,10 +38,10 @@ window.onload = function () {
     container.addChild(text2);
     background.addChild(text1);
     background.addChild(bitmap);
-    background.draw(canvas2D);
+    background.draw(context2D);
     setInterval(function () {
-        canvas2D.clearRect(0, 0, canvas.width, canvas.height);
-        background.draw(canvas2D);
+        context2D.clearRect(0, 0, context.width, context.height);
+        background.draw(context2D);
     }, 30);
 };
 var DisplayObject = (function () {
@@ -58,25 +58,25 @@ var DisplayObject = (function () {
         this.parent = null;
     }
     //模版draw方法
-    DisplayObject.prototype.draw = function (canvas) {
+    DisplayObject.prototype.draw = function (context2D) {
         this.matrix.updateFromDisplayObject(this.x, this.y, this.scaleX, this.scaleY, this.rotation);
         if (this.parent) {
             this.globalAlpha =
                 this.parent.globalAlpha * this.alpha;
             this.globalMatrix =
-                math.matrixAppendMatrix(this.matrix, this.globalMatrix);
+                math.matrixAppendMatrix(this.matrix, this.parent.globalMatrix);
         }
         else {
             this.globalAlpha = this.alpha;
             this.globalMatrix = this.matrix;
         }
-        canvas.globalAlpha = this.globalAlpha;
-        canvas.setTransform(1, 0, 0, 1, 0, 0);
-        canvas.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
-        this.render(canvas);
+        context2D.globalAlpha = this.globalAlpha;
+        context2D.setTransform(this.globalMatrix.a, this.globalMatrix.b, this.globalMatrix.c, this.globalMatrix.d, this.globalMatrix.tx, this.globalMatrix.ty);
+        //console.log(this.globalMatrix.toString());       
+        this.render(context2D);
     };
     //子类重载渲染
-    DisplayObject.prototype.render = function (canvas) { };
+    DisplayObject.prototype.render = function (context2D) { };
     return DisplayObject;
 }());
 var DisplayObjectContainer = (function (_super) {
@@ -85,10 +85,10 @@ var DisplayObjectContainer = (function (_super) {
         _super.call(this);
         this.children = new Array();
     }
-    DisplayObjectContainer.prototype.render = function (canvas) {
+    DisplayObjectContainer.prototype.render = function (context2D) {
         for (var _i = 0, _a = this.children; _i < _a.length; _i++) {
             var child = _a[_i];
-            child.draw(canvas);
+            child.draw(context2D);
         }
     };
     DisplayObjectContainer.prototype.addChild = function (child) {
@@ -128,15 +128,15 @@ var Bitmap = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Bitmap.prototype.render = function (canvas) {
+    Bitmap.prototype.render = function (context2D) {
         var _this = this;
         if (this.hasLoaded) {
-            canvas.drawImage(this.image, 0, 0, this.image.width, this.image.height);
+            context2D.drawImage(this.image, 0, 0, this.image.width, this.image.height);
         }
         else {
             this.image.src = this._src;
             this.image.onload = function () {
-                canvas.drawImage(_this.image, 0, 0, _this.image.width, _this.image.height);
+                context2D.drawImage(_this.image, 0, 0, _this.image.width, _this.image.height);
                 _this.hasLoaded = true;
             };
         }
@@ -152,10 +152,10 @@ var TextField = (function (_super) {
         this.fontSize = 10;
         this.font = "Georgia";
     }
-    TextField.prototype.render = function (canvas) {
-        canvas.fillStyle = this.color;
-        canvas.font = this.fontSize.toString() + "px " + this.font.toString();
-        canvas.fillText(this.text, this.x, this.y + this.fontSize);
+    TextField.prototype.render = function (context2D) {
+        context2D.fillStyle = this.color;
+        context2D.font = this.fontSize.toString() + "px " + this.font.toString();
+        context2D.fillText(this.text, this.x, this.y + this.fontSize);
     };
     return TextField;
 }(DisplayObject));

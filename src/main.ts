@@ -8,8 +8,14 @@ window.onload = () => {
     var container = new DisplayObjectContainer();
     container.x = 0;
     container.y = 0;
-    container.alpha = 0.5;
-    
+    container.alpha = 1;
+
+    container.addEventListener("onMouseMove",(e:MouseEvent) => {
+        let dy = currentY - tempY;
+        console.log("dy =" + dy);
+        container.y += dy;
+    },this,false);
+    /*
     var text1 = new TextField();
     text1.x = 0;
     text1.y = 0;
@@ -28,7 +34,7 @@ window.onload = () => {
     text2.fontSize = 30;
     text2.font = "Arial";
     text2.text = "落命....."
-    
+    */
     var bitmap = new Bitmap();
     bitmap.x = 0;
     bitmap.y = 0;
@@ -36,11 +42,15 @@ window.onload = () => {
     bitmap.scaleX = 1;
     bitmap.scaleY = 1;
     bitmap.src = "codmw.png";
+
+    bitmap.addEventListener("onClick",()=> {
+        console.log("You have clicked me");
+    },this,false);
     
     background.addChild(container);
-    container.addChild(text2);
-    background.addChild(text1);
-    background.addChild(bitmap);
+    //container.addChild(text2);
+    //background.addChild(text1);
+    container.addChild(bitmap);
 
     background.draw(context2D);
 
@@ -48,145 +58,70 @@ window.onload = () => {
         context2D.clearRect(0, 0, context.width, context.height);
         background.draw(context2D);
     }, 30)
+
+    //CLICK API USING
+
+    let clickResult:DisplayObject;
+    let currentX:number;
+    let currentY:number;
+    let tempX:number;
+    let tempY:number;
+    let ifMouseDown = false;
+
+    window.onmousedown = (e) => {
+        ifMouseDown = true;
+
+        let targetList = EventObserver.getInstance().targetList;
+        targetList.splice(0,targetList.length);
+        
+        clickResult = background.getClick(new math.Point(e.offsetX,e.offsetY));
+        currentX = e.offsetX;
+        currentY = e.offsetY;
+
+        console.log("Click position" + currentX + " / " +currentY);
+    }
+
+    window.onmouseup = (e) => {
+        ifMouseDown = false;
+
+        let targetList = EventObserver.getInstance().targetList;
+        targetList.splice(0,targetList.length);
+
+        let anotherClickResult = background.getClick(new math.Point(e.offsetX,e.offsetY));
+        
+        for (var i = 0;i < targetList.length - 1;i++) {
+            for (let temp of targetList[i].eventList) {
+                if(temp.eventType.match("onClick") && anotherClickResult == clickResult) {
+                    temp.func(e);
+                }
+            }
+        }
+    }
+
+    window.onmousemove = (e) => {
+        let targetList = EventObserver.getInstance().targetList;
+
+        tempX = currentX;
+        tempY = currentY;
+
+        currentX = e.offsetX;
+        currentY = e.offsetY;
+
+        if(ifMouseDown) {
+            for(var i = 0;i < targetList.length;i++) {
+                for(let temp of targetList[i].eventList) {
+                    if(temp.eventType.match("onMouseMove") && temp.ifGet == true) {
+                        temp.func(e);
+                    }
+                }
+            }
+            for(var i = 0;i < targetList.length - 1;i++) {
+                for(let temp of targetList[i].eventList) {
+                    if(temp.eventType.match("onMouseMove") && temp.ifGet == false) {
+                        temp.func(e);
+                    }
+                }
+            }
+        }
+    }
 };
-
-interface Drawable {
-    draw(context2D: CanvasRenderingContext2D);
-}
-
-class DisplayObject implements Drawable {
-
-    x = 0;
-    y = 0;
-
-    scaleX = 1;
-    scaleY = 1;
-
-    rotation = 0;
-
-    alpha = 1;
-    globalAlpha = 1;
-
-    matrix: math.Matrix = new math.Matrix();
-    globalMatrix: math.Matrix = new math.Matrix();
-
-    parent: DisplayObject = null;
-
-    //模版draw方法
-    draw(context2D: CanvasRenderingContext2D) {
-
-        this.matrix.updateFromDisplayObject(
-            this.x, this.y, this.scaleX, this.scaleY, this.rotation);
-
-        if (this.parent) {
-            this.globalAlpha =
-                this.parent.globalAlpha * this.alpha;
-            this.globalMatrix =
-                math.matrixAppendMatrix(this.matrix, this.parent.globalMatrix);
-        } else {
-            this.globalAlpha = this.alpha;
-            this.globalMatrix = this.matrix;
-        }
-
-        context2D.globalAlpha = this.globalAlpha;
-
-        context2D.setTransform(this.globalMatrix.a,
-            this.globalMatrix.b,
-            this.globalMatrix.c,
-            this.globalMatrix.d,
-            this.globalMatrix.tx,
-            this.globalMatrix.ty);
-        //console.log(this.globalMatrix.toString());       
-        this.render(context2D);
-    }
-
-    //子类重载渲染
-    render(context2D: CanvasRenderingContext2D) { }
-}
-
-class DisplayObjectContainer extends DisplayObject {
-
-    children: DisplayObject[] = new Array();
-
-    constructor() {
-        super();
-    }
-
-    render(context2D: CanvasRenderingContext2D) {
-        for (var child of this.children) {
-            child.draw(context2D);
-        }
-    }
-
-    addChild(child: DisplayObject) {
-        if (this.children.indexOf(child) == -1) {
-            this.children.push(child);
-            child.parent = this;
-        }
-    }
-
-    removeChild(child: DisplayObject) {
-
-        var tempChildren = this.children.concat();
-
-        for (var element of tempChildren) {
-            if (element == child) {
-                var index = this.children.indexOf(element);
-                tempChildren.splice(index, 1);
-                this.children = tempChildren;
-                return;
-            }
-        }
-    }
-}
-
-class Bitmap extends DisplayObject {
-
-    private image: HTMLImageElement = null;
-    private hasLoaded = false;
-    private _src = "";
-
-    constructor() {
-        super();
-        this.image = new Image();
-    }
-
-    set src(src: string) {
-        this._src = "/resource/assets/" + src;
-        this.hasLoaded = false;
-    }
-
-    render(context2D: CanvasRenderingContext2D) {
-
-        if (this.hasLoaded) {
-            context2D.drawImage(
-                this.image, 0, 0, this.image.width, this.image.height);
-        } else {
-            this.image.src = this._src;
-            this.image.onload = () => {
-                context2D.drawImage(
-                    this.image, 0, 0, this.image.width, this.image.height);
-                this.hasLoaded = true;
-            }
-        }
-    }
-}
-
-class TextField extends DisplayObject {
-
-    text = "";
-    color = "";
-    fontSize = 10;
-    font = "Georgia";
-
-    constructor() {
-        super();
-    }
-
-    render(context2D: CanvasRenderingContext2D) {
-        context2D.fillStyle = this.color;
-        context2D.font = this.fontSize.toString() + "px " + this.font.toString();
-        context2D.fillText(this.text, this.x, this.y + this.fontSize);
-    }
-}
-

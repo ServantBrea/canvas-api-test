@@ -14,6 +14,31 @@ var math;
         return new Point(x, y);
     }
     math.pointAppendMatrix = pointAppendMatrix;
+    var Rectangle = (function () {
+        function Rectangle(x, y, width, height) {
+            this.x = 0;
+            this.y = 0;
+            this.width = 1;
+            this.height = 1;
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+        Rectangle.prototype.ifPointBelong = function (point) {
+            if (point.x >= this.x &&
+                point.y >= this.y &&
+                point.x <= (this.x + this.width) &&
+                point.y <= (this.y + this.height)) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+        return Rectangle;
+    }());
+    math.Rectangle = Rectangle;
     /**
      * 使用伴随矩阵法求逆矩阵
      * http://wenku.baidu.com/view/b0a9fed8ce2f0066f53322a9

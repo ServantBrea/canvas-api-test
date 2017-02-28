@@ -15,6 +15,31 @@ module math {
         return new Point(x, y);
     }
 
+    export class Rectangle {
+        x = 0;
+        y = 0;
+        width = 1;
+        height = 1;
+
+        constructor(x:number,y:number,width:number,height:number) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+
+        ifPointBelong(point:Point) {
+            if(point.x >= this.x && 
+               point.y >= this.y && 
+               point.x <= (this.x + this.width) && 
+               point.y <= (this.y + this.height)) { 
+                   return true;
+                } else {
+                   return false;
+                }
+        }
+    }
+
     /**
      * 使用伴随矩阵法求逆矩阵
      * http://wenku.baidu.com/view/b0a9fed8ce2f0066f53322a9
@@ -74,12 +99,12 @@ module math {
             this.ty = ty;
         }
 
-        public a: number;
-        public b: number;
-        public c: number;
-        public d: number;
-        public tx: number;
-        public ty: number;
+        a: number;
+        b: number;
+        c: number;
+        d: number;
+        tx: number;
+        ty: number;
 
         public toString(): string {
             return "(a=" + this.a + ", b=" + this.b + ", c=" + this.c + ", d=" + this.d + ", tx=" + this.tx + ", ty=" + this.ty + ")";

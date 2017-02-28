@@ -129,11 +129,11 @@ class DisplayObjectContainer extends DisplayObject {
     getClick(point: math.Point) {
         let eventObserver = EventObserver.getInstance();
 
-        if (this.eventList.length > 0) {
+        if (this.eventList.length != 0) {
             eventObserver.targetList.push(this);
         }
 
-        for (var i = 0; i < this.children.length - 1; i++) {
+        for (var i = 0; i < this.children.length; i++) {
             let child = this.children[i];
             let childMatrix = new math.Matrix();
             childMatrix = math.invertMatrix(child.matrix);
@@ -145,6 +145,7 @@ class DisplayObjectContainer extends DisplayObject {
                 return clickResult;
             }
         }
+        return null
     }
 }
 
@@ -184,7 +185,7 @@ class Bitmap extends DisplayObject {
             let rect = new math.Rectangle(0, 0, this.image.width, this.image.height);
             if (rect.ifPointBelong(point)) {
                 let eventObserver = EventObserver.getInstance();
-                if (this.eventList.length > 0) {
+                if (this.eventList.length != 0) {
                     eventObserver.targetList.push(this);
                 }
                 return this;
@@ -217,12 +218,11 @@ class TextField extends DisplayObject {
 
         if (rect.ifPointBelong(point)) {
             let eventObserver = EventObserver.getInstance();
-            if (this.eventList.length > 0) {
+            if (this.eventList.length != 0) {
                 eventObserver.targetList.push(this);
             }
-            return this;
+            return this; 
         } else {
-            console.log("Click nothing");
             return null;
         }
     }

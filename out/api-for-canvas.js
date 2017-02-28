@@ -99,10 +99,10 @@ var DisplayObjectContainer = (function (_super) {
     };
     DisplayObjectContainer.prototype.getClick = function (point) {
         var eventObserver = EventObserver.getInstance();
-        if (this.eventList.length > 0) {
+        if (this.eventList.length != 0) {
             eventObserver.targetList.push(this);
         }
-        for (var i = 0; i < this.children.length - 1; i++) {
+        for (var i = 0; i < this.children.length; i++) {
             var child = this.children[i];
             var childMatrix = new math.Matrix();
             childMatrix = math.invertMatrix(child.matrix);
@@ -112,6 +112,7 @@ var DisplayObjectContainer = (function (_super) {
                 return clickResult;
             }
         }
+        return null;
     };
     return DisplayObjectContainer;
 }(DisplayObject));
@@ -150,7 +151,7 @@ var Bitmap = (function (_super) {
             var rect = new math.Rectangle(0, 0, this.image.width, this.image.height);
             if (rect.ifPointBelong(point)) {
                 var eventObserver = EventObserver.getInstance();
-                if (this.eventList.length > 0) {
+                if (this.eventList.length != 0) {
                     eventObserver.targetList.push(this);
                 }
                 return this;
@@ -180,13 +181,12 @@ var TextField = (function (_super) {
         var rect = new math.Rectangle(0, 0, this.text.length * 10, 40);
         if (rect.ifPointBelong(point)) {
             var eventObserver = EventObserver.getInstance();
-            if (this.eventList.length > 0) {
+            if (this.eventList.length != 0) {
                 eventObserver.targetList.push(this);
             }
             return this;
         }
         else {
-            console.log("Click nothing");
             return null;
         }
     };

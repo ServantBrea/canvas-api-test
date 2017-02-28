@@ -9,10 +9,10 @@ window.onload = function () {
     container.alpha = 1;
     container.addEventListener("onMouseMove", function (e) {
         var dy = currentY - tempY;
-        console.log("dy =" + dy);
+        var dx = currentX - tempX;
+        container.x += dx;
         container.y += dy;
     }, _this, false);
-    /*
     var text1 = new TextField();
     text1.x = 0;
     text1.y = 0;
@@ -20,9 +20,10 @@ window.onload = function () {
     text1.color = "#FF0000";
     text1.fontSize = 30;
     text1.font = "Arial";
-    text1.text = "I lose my game of life!"
-    
-
+    text1.text = "I lose my game of life!";
+    text1.addEventListener("onClick", function () {
+        console.log("Text is clicked");
+    }, _this, false);
     var text2 = new TextField();
     text2.x = 0;
     text2.y = 20;
@@ -30,22 +31,21 @@ window.onload = function () {
     text2.color = "#0000FF";
     text2.fontSize = 30;
     text2.font = "Arial";
-    text2.text = "落命....."
-    */
+    text2.text = "落命.....";
     var bitmap = new Bitmap();
     bitmap.x = 0;
     bitmap.y = 0;
     bitmap.alpha = 0.8;
-    bitmap.scaleX = 1;
-    bitmap.scaleY = 1;
+    bitmap.scaleX = 0.5;
+    bitmap.scaleY = 0.5;
     bitmap.src = "codmw.png";
     bitmap.addEventListener("onClick", function () {
-        console.log("You have clicked me");
+        console.log("Bitmap is clicked");
     }, _this, false);
-    background.addChild(container);
-    //container.addChild(text2);
-    //background.addChild(text1);
     container.addChild(bitmap);
+    container.addChild(text2);
+    background.addChild(container);
+    background.addChild(text1);
     background.draw(context2D);
     setInterval(function () {
         context2D.clearRect(0, 0, context.width, context.height);
@@ -65,21 +65,7 @@ window.onload = function () {
         clickResult = background.getClick(new math.Point(e.offsetX, e.offsetY));
         currentX = e.offsetX;
         currentY = e.offsetY;
-        console.log("Click position" + currentX + " / " + currentY);
-    };
-    window.onmouseup = function (e) {
-        ifMouseDown = false;
-        var targetList = EventObserver.getInstance().targetList;
-        targetList.splice(0, targetList.length);
-        var anotherClickResult = background.getClick(new math.Point(e.offsetX, e.offsetY));
-        for (var i = 0; i < targetList.length - 1; i++) {
-            for (var _i = 0, _a = targetList[i].eventList; _i < _a.length; _i++) {
-                var temp = _a[_i];
-                if (temp.eventType.match("onClick") && anotherClickResult == clickResult) {
-                    temp.func(e);
-                }
-            }
-        }
+        console.log("Click position : " + currentX + " / " + currentY);
     };
     window.onmousemove = function (e) {
         var targetList = EventObserver.getInstance().targetList;
@@ -88,7 +74,7 @@ window.onload = function () {
         currentX = e.offsetX;
         currentY = e.offsetY;
         if (ifMouseDown) {
-            for (var i = 0; i < targetList.length - 1; i++) {
+            for (var i = 0; i < targetList.length; i++) {
                 for (var _i = 0, _a = targetList[i].eventList; _i < _a.length; _i++) {
                     var temp = _a[_i];
                     if (temp.eventType.match("onMouseMove") && temp.ifGet == true) {
@@ -102,6 +88,20 @@ window.onload = function () {
                     if (temp.eventType.match("onMouseMove") && temp.ifGet == false) {
                         temp.func(e);
                     }
+                }
+            }
+        }
+    };
+    window.onmouseup = function (e) {
+        ifMouseDown = false;
+        var targetList = EventObserver.getInstance().targetList;
+        targetList.splice(0, targetList.length);
+        var anotherClickResult = background.getClick(new math.Point(e.offsetX, e.offsetY));
+        for (var i = 0; i < targetList.length; i++) {
+            for (var _i = 0, _a = targetList[i].eventList; _i < _a.length; _i++) {
+                var temp = _a[_i];
+                if (temp.eventType.match("onClick") && anotherClickResult == clickResult) {
+                    temp.func(e);
                 }
             }
         }
